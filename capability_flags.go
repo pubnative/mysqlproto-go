@@ -1,7 +1,7 @@
 package mysqlproto
 
 const (
-	CLIENT_LONG_PASSWORD = 1 << iota
+	CLIENT_LONG_PASSWORD uint32 = 1 << iota
 	CLIENT_FOUND_ROWS
 	CLIENT_LONG_FLAG
 	CLIENT_CONNECT_WITH_DB
