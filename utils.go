@@ -26,5 +26,5 @@ func readNullStr(stream io.Reader) ([]byte, error) {
 		idx += 1
 	}
 
-	return data, nil
+	return data[:len(data)-1], nil // remove null-character
 }

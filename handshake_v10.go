@@ -9,7 +9,7 @@ type HandshakeV10 struct {
 	ProtocolVersion byte
 	ServerVersion   string
 	ConnectionId    [4]byte
-	AuthPluginData  []byte
+	AuthPluginData  string
 	CapabilityFlags uint32
 	CharacterSet    byte
 	StatusFlags     [2]byte
@@ -39,7 +39,7 @@ func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 	if _, err := stream.Read(authData); err != nil {
 		return packet, err
 	}
-	packet.AuthPluginData = authData
+	packet.AuthPluginData = string(authData)
 
 	// skip filler
 	if _, err := stream.Read(make([]byte, 1)); err != nil {
@@ -96,10 +96,7 @@ func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 		if _, err := stream.Read(data); err != nil {
 			return packet, err
 		}
-		packet.AuthPluginData = append(
-			packet.AuthPluginData,
-			data...,
-		)
+		packet.AuthPluginData += string(data[:len(data)-1]) // remove null-character
 	}
 
 	if packet.CapabilityFlags&CLIENT_PLUGIN_AUTH > 0 {
