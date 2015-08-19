@@ -20,7 +20,7 @@ func HandshakeResponse41(
 	packetSize += 4                         // capability flags
 	packetSize += 4                         // packet size
 	packetSize += 1                         // character set
-	packetSize += 32                        // reserved string
+	packetSize += 23                        // reserved string
 	packetSize += uint32(len(username)) + 1 // + null character
 
 	var authResponse []byte
@@ -90,7 +90,7 @@ func HandshakeResponse41(
 
 	packet = append(packet, characterSet)
 
-	packet = append(packet, make([]byte, 32)...)
+	packet = append(packet, make([]byte, 23)...)
 
 	packet = append(packet, username...)
 	packet = append(packet, 0x00)
