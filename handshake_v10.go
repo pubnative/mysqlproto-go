@@ -19,6 +19,10 @@ type HandshakeV10 struct {
 func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 	packet := HandshakeV10{}
 
+	if _, err := stream.Read(make([]byte, 4)); err != nil {
+		return packet, nil
+	}
+
 	data := make([]byte, 1)
 	if _, err := stream.Read(data); err != nil {
 		return packet, err

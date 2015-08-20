@@ -7,7 +7,6 @@ import (
 func readNullStr(stream io.Reader) ([]byte, error) {
 	data := make([]byte, 1)
 	idx := 0
-	br := false
 	for {
 		_, err := stream.Read(data[idx:])
 		if err != nil {
@@ -15,11 +14,7 @@ func readNullStr(stream io.Reader) ([]byte, error) {
 		}
 
 		if data[idx] == 0x00 {
-			if br {
-				break
-			}
-		} else {
-			br = true
+			break
 		}
 
 		data = append(data, 0)
