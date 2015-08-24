@@ -24,6 +24,7 @@ func readNullStr(stream io.Reader) ([]byte, error) {
 	return data[:len(data)-1], nil // remove null-character
 }
 
+// https://dev.mysql.com/doc/internals/en/integer.html#packet-Protocol::LengthEncodedInteger
 func lenEncInt(i uint64) []byte {
 	if i < 251 {
 		return []byte{byte(i)}
@@ -35,6 +36,23 @@ func lenEncInt(i uint64) []byte {
 		return []byte{0xfe, byte(i), byte(i >> 8), byte(i >> 16), byte(i >> 24),
 			byte(i >> 32), byte(i >> 40), byte(i >> 48), byte(i >> 56),
 		}
+	}
+}
+
+func lenDecInt(b []byte) (uint64, uint64, bool) {
+	switch b[0] {
+	case 0xfb:
+		return 0, 0, true
+	case 0xfc:
+		return uint64(b[1]) | uint64(b[2]<<8), 3, false
+	case 0xfd:
+		return uint64(b[1]) | uint64(b[2]<<8) | uint64(b[3]<<16), 4, false
+	case 0xfe:
+		return uint64(b[1]) | uint64(b[2]<<8) | uint64(b[3]<<16) |
+			uint64(b[4]<<24) | uint64(b[5]<<32) | uint64(b[6]<<40) |
+			uint64(b[7]<<48) | uint64(b[8]<<56), 9, false
+	default:
+		return uint64(b[0]), 1, false
 	}
 }
 
