@@ -39,10 +39,10 @@ func lenEncInt(i uint64) []byte {
 	}
 }
 
-func lenDecInt(b []byte) (uint64, uint64, bool) {
+func lenDecInt(b []byte) (uint64, uint64, bool) { // int, offset, is null
 	switch b[0] {
 	case 0xfb:
-		return 0, 0, true
+		return 0, 1, true
 	case 0xfc:
 		return uint64(b[1]) | uint64(b[2]<<8), 3, false
 	case 0xfd:

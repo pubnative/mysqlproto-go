@@ -9,28 +9,17 @@ type ResultSet struct {
 	stream io.Reader
 }
 
-type ResultSetRow struct {
-	packet []byte
-}
-
-func (r ResultSetRow) ReadString(offset uint64) (string, uint64) {
-	count, intOffset, _ := lenDecInt(r.packet[offset:])
-	until := offset + intOffset + count
-	result := string(r.packet[offset+intOffset : until])
-	return result, until
-}
-
-func (r ResultSet) Row() (ResultSetRow, bool, error) {
+func (r ResultSet) Row() ([]byte, error) {
 	packet, err := ReadPacket(r.stream)
 	if err != nil {
-		return ResultSetRow{}, false, err
+		return nil, err
 	}
 
 	if packet.Payload[0] == 0xfe { // EOF
-		return ResultSetRow{}, true, nil
+		return nil, nil
 	}
 
-	return ResultSetRow{packet.Payload}, false, nil
+	return packet.Payload, nil
 }
 
 func ComQueryResponse(stream io.Reader) (ResultSet, error) {
