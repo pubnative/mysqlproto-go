@@ -137,11 +137,11 @@ func nativePassword(authPluginData string, password string) []byte {
 	hash.Write([]byte(password))
 	hashPass := hash.Sum(nil)
 
-	hash = sha1.New()
+	hash.Reset()
 	hash.Write(hashPass)
 	doubleHashPass := hash.Sum(nil)
 
-	hash = sha1.New()
+	hash.Reset()
 	hash.Write([]byte(authPluginData))
 	hash.Write(doubleHashPass)
 	salt := hash.Sum(nil)
