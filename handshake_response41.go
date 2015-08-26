@@ -51,11 +51,15 @@ func HandshakeResponse41(
 	if l := len(database); l > 0 {
 		capabilityFlags |= CLIENT_CONNECT_WITH_DB
 		packetSize += uint32(l) + 1 // + null character
+	} else {
+		capabilityFlags &= ^CLIENT_CONNECT_WITH_DB
 	}
 
 	if l := len(authPluginName); l > 0 {
 		capabilityFlags |= CLIENT_PLUGIN_AUTH
 		packetSize += uint32(l) + 1 // + null character
+	} else {
+		capabilityFlags &= ^CLIENT_PLUGIN_AUTH
 	}
 
 	var attrData []byte
@@ -72,6 +76,8 @@ func HandshakeResponse41(
 
 		copy(attrData[:len(total)], total)
 		copy(attrData[len(total):], data)
+	} else {
+		capabilityFlags &= ^CLIENT_CONNECT_ATTRS
 	}
 
 	packetSize += uint32(len(attrData))
