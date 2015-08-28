@@ -2,6 +2,8 @@
 package mysqlproto
 
 import (
+	"bytes"
+	"errors"
 	"io"
 )
 
@@ -17,78 +19,63 @@ type HandshakeV10 struct {
 }
 
 func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
-	packet := HandshakeV10{}
+	p, err := ReadPacket(stream)
+	if err != nil {
+		return HandshakeV10{}, err
+	}
 
-	if _, err := stream.Read(make([]byte, 4)); err != nil {
+	data := p.Payload
+
+	if data[0] == PACKET_EOF {
+		return HandshakeV10{}, errors.New(string(p.Payload))
+	}
+
+	pos := 0
+	packet := HandshakeV10{
+		ProtocolVersion: data[pos],
+	}
+	pos += 1
+
+	null := bytes.IndexByte(data[pos:], 0x00)
+	packet.ServerVersion = string(data[pos : pos+null])
+	pos += null + 1 // skip null terminator
+
+	packet.ConnectionId = [4]byte{
+		data[pos],
+		data[pos+1],
+		data[pos+2],
+		data[pos+3],
+	}
+	pos += 4
+
+	packet.AuthPluginData = string(data[pos : pos+8])
+	pos += 8
+
+	pos += 1 // skip filler
+
+	packet.CapabilityFlags = uint32(data[pos]) | uint32(data[pos+1])<<8
+	pos += 2
+
+	if len(data) == pos {
 		return packet, nil
 	}
 
-	data := make([]byte, 1)
-	if _, err := stream.Read(data); err != nil {
-		return packet, err
-	}
-	packet.ProtocolVersion = data[0]
+	packet.CharacterSet = data[pos]
+	pos += 1
 
-	srvVer, err := readNullStr(stream)
-	if err != nil {
-		return packet, err
-	}
-	packet.ServerVersion = string(srvVer)
+	packet.StatusFlags = [2]byte{data[pos], data[pos+1]}
+	pos += 2
 
-	if _, err := stream.Read(packet.ConnectionId[:4]); err != nil {
-		return packet, err
-	}
-
-	authData := make([]byte, 8)
-	if _, err := stream.Read(authData); err != nil {
-		return packet, err
-	}
-	packet.AuthPluginData = string(authData)
-
-	// skip filler
-	if _, err := stream.Read(make([]byte, 1)); err != nil {
-		return packet, err
-	}
-
-	// 1 extra byte for character set
-	// to test if more data available in the packet
-	data = make([]byte, 3)
-	read, err := stream.Read(data)
-	if err != nil {
-		return packet, err
-	}
-	packet.CapabilityFlags = uint32(data[0]) | uint32(data[1])<<8
-
-	if read != 3 {
-		return packet, nil
-	}
-	packet.CharacterSet = data[2]
-
-	if _, err := stream.Read(packet.StatusFlags[:2]); err != nil {
-		return packet, err
-	}
-
-	upperFlags := make([]byte, 2)
-	if _, err := stream.Read(upperFlags); err != nil {
-		return packet, err
-	}
-
-	packet.CapabilityFlags = ((uint32(upperFlags[0]) | uint32(upperFlags[1])<<8) << 16) | packet.CapabilityFlags
+	packet.CapabilityFlags = ((uint32(data[pos]) | uint32(data[pos+1])<<8) << 16) | packet.CapabilityFlags
+	pos += 2
 
 	var authDataLen uint8 = 0
 	if packet.CapabilityFlags&CLIENT_PLUGIN_AUTH > 0 {
-		data = make([]byte, 1)
-		if _, err := stream.Read(data); err != nil {
-			return packet, err
-		}
-		authDataLen = uint8(data[0])
+		authDataLen = uint8(data[pos])
 	}
+	pos += 1
 
-	// skip reserved 10 bytes
-	data = make([]byte, 10)
-	if _, err := stream.Read(data); err != nil {
-		return packet, err
-	}
+	pos += 10 // skip reserved 10 bytes
 
 	if packet.CapabilityFlags&CLIENT_SECURE_CONNECTION > 0 {
 		var read uint8 = 13
@@ -96,19 +83,13 @@ func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 			read = authDataLen - 8
 		}
 
-		data = make([]byte, read)
-		if _, err := stream.Read(data); err != nil {
-			return packet, err
-		}
-		packet.AuthPluginData += string(data[:len(data)-1]) // remove null-character
+		packet.AuthPluginData += string(data[pos : pos+int(read)-1]) // remove null-character
+		pos += int(read)
 	}
 
 	if packet.CapabilityFlags&CLIENT_PLUGIN_AUTH > 0 {
-		data, err = readNullStr(stream)
-		if err != nil {
-			return packet, err
-		}
-		packet.AuthPluginName = string(data)
+		null := bytes.IndexByte(data[pos:], 0x00)
+		packet.AuthPluginName = string(p.Payload[pos : pos+null])
 	}
 
 	return packet, nil
