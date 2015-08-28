@@ -12,7 +12,7 @@ func TestHandshakeResponse41(t *testing.T) {
 	characterSet := byte(0x21)
 	username := "root"
 	password := "user123"
-	authPluginData := "abcdefghijklmnopqrst"
+	authPluginData := []byte("abcdefghijklmnopqrst")
 	database := "mysqldb"
 	authPluginName := "mysql_native_password"
 	connectAttrs := map[string]string{"client_version": "5.6.25"}

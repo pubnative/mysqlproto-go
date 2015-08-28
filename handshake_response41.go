@@ -9,7 +9,7 @@ func HandshakeResponse41(
 	characterSet byte,
 	username string,
 	password string,
-	authPluginData string,
+	authPluginData []byte,
 	database string,
 	authPluginName string,
 	connectAttrs map[string]string,
@@ -26,7 +26,7 @@ func HandshakeResponse41(
 	var authResponse []byte
 	switch authPluginName {
 	case "mysql_native_password":
-		authResponse = nativePassword(authPluginData, password)
+		authResponse = nativePassword(password, authPluginData)
 	case "mysql_old_password":
 		panic(`auth method "mysql_old_password" not supported`) // todo
 	default:
@@ -128,7 +128,7 @@ func HandshakeResponse41(
 
 // https://dev.mysql.com/doc/internals/en/secure-password-authentication.html#packet-Authentication::Native41
 // SHA1( password ) XOR SHA1( "20-bytes random data from server" <concat> SHA1( SHA1( password ) ) )
-func nativePassword(authPluginData string, password string) []byte {
+func nativePassword(password string, authPluginData []byte) []byte {
 	if len(password) == 0 {
 		return nil
 	}
@@ -142,7 +142,7 @@ func nativePassword(authPluginData string, password string) []byte {
 	doubleHashPass := hash.Sum(nil)
 
 	hash.Reset()
-	hash.Write([]byte(authPluginData))
+	hash.Write(authPluginData)
 	hash.Write(doubleHashPass)
 	salt := hash.Sum(nil)
 

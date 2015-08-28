@@ -11,7 +11,7 @@ type HandshakeV10 struct {
 	ProtocolVersion byte
 	ServerVersion   string
 	ConnectionId    [4]byte
-	AuthPluginData  string
+	AuthPluginData  []byte
 	CapabilityFlags uint32
 	CharacterSet    byte
 	StatusFlags     [2]byte
@@ -48,8 +48,8 @@ func (p Proto) ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 	}
 	pos += 4
 
-	packet.AuthPluginData = string(data[pos : pos+8])
-	pos += 8
+	authDataPos := pos
+	pos += 8 // 8 bytes auth data plugin
 
 	pos += 1 // skip filler
 
@@ -57,6 +57,7 @@ func (p Proto) ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 	pos += 2
 
 	if len(data) == pos {
+		packet.AuthPluginData = data[authDataPos : authDataPos+8]
 		return packet, nil
 	}
 
@@ -83,7 +84,9 @@ func (p Proto) ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 			read = authDataLen - 8
 		}
 
-		packet.AuthPluginData += string(data[pos : pos+int(read)-1]) // remove null-character
+		packet.AuthPluginData = make([]byte, read+7) // without null-character
+		copy(packet.AuthPluginData[:8], data[authDataPos:authDataPos+8])
+		copy(packet.AuthPluginData[8:], data[pos:pos+int(read)-1]) // remove null-character
 		pos += int(read)
 	}
 
