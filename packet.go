@@ -15,14 +15,14 @@ type Packet struct {
 
 func ReadPacket(stream io.Reader) (Packet, error) {
 	header := make([]byte, 4)
-	if _, err := stream.Read(header); err != nil {
+	if _, err := io.ReadFull(stream, header); err != nil {
 		return Packet{}, err
 	}
 
 	length := uint32(byte(header[0]) | header[1]<<8 | header[2]<<16)
 	seqID := header[3]
 	payload := make([]byte, length)
-	if _, err := stream.Read(payload); err != nil {
+	if _, err := io.ReadFull(stream, payload); err != nil {
 		return Packet{}, err
 	}
 
