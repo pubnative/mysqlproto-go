@@ -7,10 +7,11 @@ import (
 
 type ResultSet struct {
 	stream io.Reader
+	proto  Proto
 }
 
 func (r ResultSet) Row() ([]byte, error) {
-	packet, err := ReadPacket(r.stream)
+	packet, err := r.proto.ReadPacket(r.stream)
 	if err != nil {
 		return nil, err
 	}
@@ -22,8 +23,8 @@ func (r ResultSet) Row() ([]byte, error) {
 	return packet.Payload, nil
 }
 
-func ComQueryResponse(stream io.Reader) (ResultSet, error) {
-	packet, err := ReadPacket(stream)
+func (p Proto) ComQueryResponse(stream io.Reader) (ResultSet, error) {
+	packet, err := p.ReadPacket(stream)
 	if err != nil {
 		return ResultSet{}, err
 	}
@@ -35,7 +36,7 @@ func ComQueryResponse(stream io.Reader) (ResultSet, error) {
 	columns, _, _ := lenDecInt(packet.Payload)
 	skip := int(columns) + 1 // skip column definition + first EOF
 	for i := 0; i < skip; i++ {
-		packet, err := ReadPacket(stream)
+		packet, err := p.ReadPacket(stream)
 		if err != nil {
 			return ResultSet{}, err
 		}
@@ -45,5 +46,5 @@ func ComQueryResponse(stream io.Reader) (ResultSet, error) {
 		}
 	}
 
-	return ResultSet{stream}, nil
+	return ResultSet{stream, p}, nil
 }

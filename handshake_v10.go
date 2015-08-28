@@ -18,16 +18,16 @@ type HandshakeV10 struct {
 	AuthPluginName  string
 }
 
-func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
-	p, err := ReadPacket(stream)
+func (p Proto) NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
+	pkt, err := p.ReadPacket(stream)
 	if err != nil {
 		return HandshakeV10{}, err
 	}
 
-	data := p.Payload
+	data := pkt.Payload
 
 	if data[0] == PACKET_EOF {
-		return HandshakeV10{}, errors.New(string(p.Payload))
+		return HandshakeV10{}, errors.New(string(data))
 	}
 
 	pos := 0
@@ -89,7 +89,7 @@ func NewHandshakeV10(stream io.Reader) (HandshakeV10, error) {
 
 	if packet.CapabilityFlags&CLIENT_PLUGIN_AUTH > 0 {
 		null := bytes.IndexByte(data[pos:], 0x00)
-		packet.AuthPluginName = string(p.Payload[pos : pos+null])
+		packet.AuthPluginName = string(data[pos : pos+null])
 	}
 
 	return packet, nil

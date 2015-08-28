@@ -13,14 +13,13 @@ type Packet struct {
 	Payload    []byte
 }
 
-func ReadPacket(stream io.Reader) (Packet, error) {
-	header := make([]byte, 4)
-	if _, err := io.ReadFull(stream, header); err != nil {
+func (p Proto) ReadPacket(stream io.Reader) (Packet, error) {
+	if _, err := io.ReadFull(stream, p.header); err != nil {
 		return Packet{}, err
 	}
 
-	length := uint32(byte(header[0]) | header[1]<<8 | header[2]<<16)
-	seqID := header[3]
+	length := uint32(byte(p.header[0]) | p.header[1]<<8 | p.header[2]<<16)
+	seqID := p.header[3]
 	payload := make([]byte, length)
 	if _, err := io.ReadFull(stream, payload); err != nil {
 		return Packet{}, err
