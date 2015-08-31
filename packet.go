@@ -18,7 +18,7 @@ func (p Proto) ReadPacket(stream io.Reader) (Packet, error) {
 		return Packet{}, err
 	}
 
-	length := uint32(byte(p.header[0]) | p.header[1]<<8 | p.header[2]<<16)
+	length := uint32(p.header[0]) | uint32(p.header[1])<<8 | uint32(p.header[2])<<16
 	seqID := p.header[3]
 	payload := make([]byte, length)
 	if _, err := io.ReadFull(stream, payload); err != nil {
