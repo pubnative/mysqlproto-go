@@ -8,22 +8,68 @@ const PACKET_OK = 0x00
 const PACKET_ERR = 0xff
 const PACKET_EOF = 0xfe
 
+const PACKET_BUFFER_SIZE = 512
+
 type Packet struct {
 	SequenceID byte
 	Payload    []byte
 }
 
-func (p Proto) ReadPacket(stream io.Reader) (Packet, error) {
-	if _, err := io.ReadFull(stream, p.header); err != nil {
-		return Packet{}, err
+type StreamPacket struct {
+	stream io.Reader
+	buffer []byte
+	read   int
+	left   int
+}
+
+func NewStreamPacket(stream io.Reader) *StreamPacket {
+	return &StreamPacket{stream, nil, 0, 0}
+}
+
+func (s *StreamPacket) NextPacket() (Packet, error) {
+	scale := func(size int) {
+		if size < PACKET_BUFFER_SIZE {
+			size = PACKET_BUFFER_SIZE
+		}
+		buf := make([]byte, size)
+		copy(buf, s.buffer[s.read:s.read+s.left])
+		s.buffer = buf
+		s.read = 0
 	}
 
-	length := uint32(p.header[0]) | uint32(p.header[1])<<8 | uint32(p.header[2])<<16
-	seqID := p.header[3]
-	payload := make([]byte, length)
-	if _, err := io.ReadFull(stream, payload); err != nil {
-		return Packet{}, err
+	if len(s.buffer)-s.read < 3 { // size of the packet
+		scale(PACKET_BUFFER_SIZE)
 	}
 
-	return Packet{seqID, payload}, nil
+	if s.left < 3 {
+		read, err := io.ReadAtLeast(s.stream, s.buffer[s.read+s.left:], 3-s.left)
+		if err != nil {
+			return Packet{}, err
+		}
+		s.left += read
+	}
+
+	length := int(uint32(s.buffer[s.read]) | uint32(s.buffer[s.read+1])<<8 | uint32(s.buffer[s.read+2])<<16)
+	total := length + 4
+	if total > len(s.buffer)-s.read {
+		scale(total)
+	}
+
+	if total > s.left {
+		read, err := io.ReadAtLeast(s.stream, s.buffer[s.read+s.left:], total-s.left)
+		if err != nil {
+			return Packet{}, err
+		}
+		s.left += read
+	}
+
+	packet := Packet{
+		SequenceID: s.buffer[s.read+3],
+		Payload:    s.buffer[s.read+4 : s.read+total],
+	}
+
+	s.left -= total
+	s.read += total
+
+	return packet, nil
 }

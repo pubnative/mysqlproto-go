@@ -6,12 +6,11 @@ import (
 )
 
 type ResultSet struct {
-	stream io.Reader
-	proto  Proto
+	streamPacket *StreamPacket
 }
 
 func (r ResultSet) Row() ([]byte, error) {
-	packet, err := r.proto.ReadPacket(r.stream)
+	packet, err := r.streamPacket.NextPacket()
 	if err != nil {
 		return nil, err
 	}
@@ -23,8 +22,10 @@ func (r ResultSet) Row() ([]byte, error) {
 	return packet.Payload, nil
 }
 
-func (p Proto) ComQueryResponse(stream io.Reader) (ResultSet, error) {
-	packet, err := p.ReadPacket(stream)
+func ComQueryResponse(stream io.Reader) (ResultSet, error) {
+	streamPkt := NewStreamPacket(stream)
+
+	packet, err := streamPkt.NextPacket()
 	if err != nil {
 		return ResultSet{}, err
 	}
@@ -36,7 +37,7 @@ func (p Proto) ComQueryResponse(stream io.Reader) (ResultSet, error) {
 	columns, _, _ := lenDecInt(packet.Payload)
 	skip := int(columns) + 1 // skip column definition + first EOF
 	for i := 0; i < skip; i++ {
-		packet, err := p.ReadPacket(stream)
+		packet, err := streamPkt.NextPacket()
 		if err != nil {
 			return ResultSet{}, err
 		}
@@ -46,5 +47,5 @@ func (p Proto) ComQueryResponse(stream io.Reader) (ResultSet, error) {
 		}
 	}
 
-	return ResultSet{stream, p}, nil
+	return ResultSet{streamPkt}, nil
 }

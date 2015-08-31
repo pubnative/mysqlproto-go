@@ -18,8 +18,7 @@ func TestNewHandshakeV10FullPacket(t *testing.T) {
 		0x76, 0x65, 0x5f, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x00,
 	}
 	stream := bytes.NewBuffer(data)
-	proto := NewProto()
-	packet, err := proto.ReadHandshakeV10(stream)
+	packet, err := ReadHandshakeV10(stream)
 	assert.Nil(t, err)
 	assert.Equal(t, packet.ProtocolVersion, byte(0x0a))
 	assert.Equal(t, packet.ServerVersion, "5.6.25")
@@ -38,8 +37,7 @@ func TestNewHandshakeV10ShortPacket(t *testing.T) {
 		0x73, 0x4e, 0x00, 0xff, 0xf7,
 	}
 	stream := bytes.NewBuffer(data)
-	proto := NewProto()
-	packet, err := proto.ReadHandshakeV10(stream)
+	packet, err := ReadHandshakeV10(stream)
 	assert.Nil(t, err)
 	assert.Equal(t, packet.ProtocolVersion, byte(0x0a))
 	assert.Equal(t, packet.ServerVersion, "5.6.25")

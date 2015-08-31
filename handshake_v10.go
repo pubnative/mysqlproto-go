@@ -18,8 +18,9 @@ type HandshakeV10 struct {
 	AuthPluginName  string
 }
 
-func (p Proto) ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
-	pkt, err := p.ReadPacket(stream)
+func ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
+	streamPkt := NewStreamPacket(stream)
+	pkt, err := streamPkt.NextPacket()
 	if err != nil {
 		return HandshakeV10{}, err
 	}
