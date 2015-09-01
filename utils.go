@@ -1,5 +1,11 @@
 package mysqlproto
 
+func ReadRowValue(row []byte, offset uint64) ([]byte, uint64) {
+	count, intOffset, _ := lenDecInt(row[offset:])
+	until := offset + intOffset + count
+	return row[offset+intOffset : until], until
+}
+
 // https://dev.mysql.com/doc/internals/en/integer.html#packet-Protocol::LengthEncodedInteger
 func lenEncInt(i uint64) []byte {
 	if i < 251 {
