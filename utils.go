@@ -1,9 +1,9 @@
 package mysqlproto
 
-func ReadRowValue(row []byte, offset uint64) ([]byte, uint64) {
-	count, intOffset, _ := lenDecInt(row[offset:])
+func ReadRowValue(row []byte, offset uint64) ([]byte, uint64, bool) {
+	count, intOffset, null := lenDecInt(row[offset:])
 	until := offset + intOffset + count
-	return row[offset+intOffset : until], until
+	return row[offset+intOffset : until], until, null
 }
 
 // https://dev.mysql.com/doc/internals/en/integer.html#packet-Protocol::LengthEncodedInteger
