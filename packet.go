@@ -1,6 +1,7 @@
 package mysqlproto
 
 import (
+	"bytes"
 	"io"
 )
 
@@ -15,18 +16,26 @@ type Packet struct {
 	Payload    []byte
 }
 
-type StreamPacket struct {
-	stream io.Reader
+type Stream struct {
+	stream io.ReadWriteCloser
 	buffer []byte
 	read   int
 	left   int
 }
 
-func NewStreamPacket(stream io.Reader) *StreamPacket {
-	return &StreamPacket{stream, nil, 0, 0}
+func NewStream(stream io.ReadWriteCloser) *Stream {
+	return &Stream{stream, nil, 0, 0}
 }
 
-func (s *StreamPacket) NextPacket() (Packet, error) {
+func (s *Stream) Write(data []byte) (int, error) {
+	return s.stream.Write(data)
+}
+
+func (s *Stream) Close() error {
+	return s.stream.Close()
+}
+
+func (s *Stream) NextPacket() (Packet, error) {
 	scale := func(size int) {
 		if size < PACKET_BUFFER_SIZE {
 			size = PACKET_BUFFER_SIZE
@@ -72,4 +81,18 @@ func (s *StreamPacket) NextPacket() (Packet, error) {
 	s.read += total
 
 	return packet, nil
+}
+
+// For testing
+
+type Buffer struct {
+	*bytes.Buffer
+}
+
+func NewBuffer(data []byte) *Buffer {
+	return &Buffer{bytes.NewBuffer(data)}
+}
+
+func (b *Buffer) Close() error {
+	return nil
 }

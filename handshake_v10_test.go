@@ -1,7 +1,6 @@
 package mysqlproto
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,8 +16,8 @@ func TestNewHandshakeV10FullPacket(t *testing.T) {
 		0x00, 0x6d, 0x79, 0x73, 0x71, 0x6c, 0x5f, 0x6e, 0x61, 0x74, 0x69,
 		0x76, 0x65, 0x5f, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x00,
 	}
-	stream := bytes.NewBuffer(data)
-	packet, err := ReadHandshakeV10(stream)
+	stream := NewBuffer(data)
+	packet, err := ReadHandshakeV10(NewStream(stream))
 	assert.Nil(t, err)
 	assert.Equal(t, packet.ProtocolVersion, byte(0x0a))
 	assert.Equal(t, packet.ServerVersion, "5.6.25")
@@ -31,13 +30,12 @@ func TestNewHandshakeV10FullPacket(t *testing.T) {
 }
 
 func TestNewHandshakeV10ShortPacket(t *testing.T) {
-	data := []byte{
+	buf := NewBuffer([]byte{
 		0x17, 0x00, 0x00, 0x00, 0x0a, 0x35, 0x2e, 0x36, 0x2e, 0x32, 0x35,
 		0x00, 0x9e, 0x2e, 0x00, 0x00, 0x4f, 0x61, 0x7b, 0x65, 0x68, 0x5c,
 		0x73, 0x4e, 0x00, 0xff, 0xf7,
-	}
-	stream := bytes.NewBuffer(data)
-	packet, err := ReadHandshakeV10(stream)
+	})
+	packet, err := ReadHandshakeV10(NewStream(buf))
 	assert.Nil(t, err)
 	assert.Equal(t, packet.ProtocolVersion, byte(0x0a))
 	assert.Equal(t, packet.ServerVersion, "5.6.25")

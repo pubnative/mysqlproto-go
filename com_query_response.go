@@ -2,15 +2,14 @@ package mysqlproto
 
 import (
 	"errors"
-	"io"
 )
 
 type ResultSet struct {
-	streamPacket *StreamPacket
+	stream *Stream
 }
 
 func (r ResultSet) Row() ([]byte, error) {
-	packet, err := r.streamPacket.NextPacket()
+	packet, err := r.stream.NextPacket()
 	if err != nil {
 		return nil, err
 	}
@@ -22,10 +21,8 @@ func (r ResultSet) Row() ([]byte, error) {
 	return packet.Payload, nil
 }
 
-func ComQueryResponse(stream io.Reader) (ResultSet, error) {
-	streamPkt := NewStreamPacket(stream)
-
-	packet, err := streamPkt.NextPacket()
+func ComQueryResponse(stream *Stream) (ResultSet, error) {
+	packet, err := stream.NextPacket()
 	if err != nil {
 		return ResultSet{}, err
 	}
@@ -37,7 +34,7 @@ func ComQueryResponse(stream io.Reader) (ResultSet, error) {
 	columns, _, _ := lenDecInt(packet.Payload)
 	skip := int(columns) + 1 // skip column definition + first EOF
 	for i := 0; i < skip; i++ {
-		packet, err := streamPkt.NextPacket()
+		packet, err := stream.NextPacket()
 		if err != nil {
 			return ResultSet{}, err
 		}
@@ -47,5 +44,5 @@ func ComQueryResponse(stream io.Reader) (ResultSet, error) {
 		}
 	}
 
-	return ResultSet{streamPkt}, nil
+	return ResultSet{stream}, nil
 }

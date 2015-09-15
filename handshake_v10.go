@@ -4,7 +4,6 @@ package mysqlproto
 import (
 	"bytes"
 	"errors"
-	"io"
 )
 
 type HandshakeV10 struct {
@@ -18,9 +17,8 @@ type HandshakeV10 struct {
 	AuthPluginName  string
 }
 
-func ReadHandshakeV10(stream io.Reader) (HandshakeV10, error) {
-	streamPkt := NewStreamPacket(stream)
-	pkt, err := streamPkt.NextPacket()
+func ReadHandshakeV10(stream *Stream) (HandshakeV10, error) {
+	pkt, err := stream.NextPacket()
 	if err != nil {
 		return HandshakeV10{}, err
 	}
