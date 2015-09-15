@@ -85,14 +85,14 @@ func (s *Stream) NextPacket() (Packet, error) {
 
 // For testing
 
-type Buffer struct {
+type buffer struct {
 	*bytes.Buffer
 }
 
-func NewBuffer(data []byte) *Buffer {
-	return &Buffer{bytes.NewBuffer(data)}
+func newBuffer(data []byte) *buffer {
+	return &buffer{bytes.NewBuffer(data)}
 }
 
-func (b *Buffer) Close() error {
+func (b *buffer) Close() error {
 	return nil
 }
