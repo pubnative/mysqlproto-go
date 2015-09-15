@@ -17,14 +17,15 @@ type Packet struct {
 }
 
 type Stream struct {
-	stream io.ReadWriteCloser
-	buffer []byte
-	read   int
-	left   int
+	stream   io.ReadWriteCloser
+	buffer   []byte
+	read     int
+	left     int
+	syscalls int
 }
 
 func NewStream(stream io.ReadWriteCloser) *Stream {
-	return &Stream{stream, nil, 0, 0}
+	return &Stream{stream, nil, 0, 0, 0}
 }
 
 func (s *Stream) Write(data []byte) (int, error) {
@@ -51,7 +52,7 @@ func (s *Stream) NextPacket() (Packet, error) {
 	}
 
 	if s.left < 3 {
-		read, err := io.ReadAtLeast(s.stream, s.buffer[s.read+s.left:], 3-s.left)
+		read, err := s.readAtLeast(s.buffer[s.read+s.left:], 3-s.left)
 		if err != nil {
 			return Packet{}, err
 		}
@@ -65,7 +66,7 @@ func (s *Stream) NextPacket() (Packet, error) {
 	}
 
 	if total > s.left {
-		read, err := io.ReadAtLeast(s.stream, s.buffer[s.read+s.left:], total-s.left)
+		read, err := s.readAtLeast(s.buffer[s.read+s.left:], total-s.left)
 		if err != nil {
 			return Packet{}, err
 		}
@@ -81,6 +82,24 @@ func (s *Stream) NextPacket() (Packet, error) {
 	s.read += total
 
 	return packet, nil
+}
+
+func (s *Stream) Syscalls() int {
+	return s.syscalls
+}
+
+func (s *Stream) ResetStats() {
+	s.syscalls = 0
+}
+
+func (s *Stream) readAtLeast(buf []byte, min int) (n int, err error) {
+	for n < min && err == nil {
+		var nn int
+		nn, err = s.stream.Read(buf[n:])
+		s.syscalls += 1
+		n += nn
+	}
+	return
 }
 
 // For testing
