@@ -9,7 +9,7 @@ const PACKET_OK = 0x00
 const PACKET_ERR = 0xff
 const PACKET_EOF = 0xfe
 
-const PACKET_BUFFER_SIZE = 512
+const PACKET_BUFFER_SIZE = 1500 // default MTU
 
 type Packet struct {
 	SequenceID byte
