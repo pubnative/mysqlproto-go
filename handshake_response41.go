@@ -16,6 +16,11 @@ func HandshakeResponse41(
 ) []byte {
 	capabilityFlags |= CLIENT_PROTOCOL_41 // must be always set
 
+	// todo not supported
+	capabilityFlags &= ^CLIENT_SSL
+	capabilityFlags &= ^CLIENT_COMPRESS
+	capabilityFlags &= ^CLIENT_DEPRECATE_EOF
+
 	var packetSize uint32 = 0
 	packetSize += 4                         // capability flags
 	packetSize += 4                         // packet size

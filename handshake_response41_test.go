@@ -8,7 +8,7 @@ import (
 )
 
 func TestHandshakeResponse41(t *testing.T) {
-	capabilityFlags := uint32(0x807ff7ff)
+	capabilityFlags := uint32(0x807ff7df)
 	characterSet := byte(0x21)
 	username := "root"
 	password := "user123"
@@ -30,7 +30,7 @@ func TestHandshakeResponse41(t *testing.T) {
 
 	assert.Equal(t, packet[:3], []byte{0x6f, 0x00, 0x00})
 	assert.Equal(t, packet[3], byte(0x01))
-	assert.Equal(t, packet[4:8], []byte{0xff, 0xf7, 0x5f, 0x80})
+	assert.Equal(t, packet[4:8], []byte{0xdf, 0xf7, 0x5f, 0x80})
 	assert.Equal(t, packet[8:12], []byte{0x6f, 0x00, 0x00, 0x00})
 	assert.Equal(t, packet[12], byte(0x21))
 	assert.Equal(t, packet[13:36], make([]byte, 23))
