@@ -14,7 +14,7 @@ func (r ResultSet) Row() ([]byte, error) {
 		return nil, err
 	}
 
-	if packet.Payload[0] == 0xfe { // EOF
+	if packet.Payload[0] == PACKET_EOF {
 		return nil, nil
 	}
 
@@ -27,7 +27,7 @@ func ComQueryResponse(stream *Stream) (ResultSet, error) {
 		return ResultSet{}, err
 	}
 
-	if packet.Payload[0] == 0xff {
+	if packet.Payload[0] == PACKET_ERR {
 		return ResultSet{}, errors.New(string(packet.Payload))
 	}
 
@@ -39,7 +39,7 @@ func ComQueryResponse(stream *Stream) (ResultSet, error) {
 			return ResultSet{}, err
 		}
 
-		if packet.Payload[0] == 0xff {
+		if packet.Payload[0] == PACKET_ERR {
 			return ResultSet{}, errors.New(string(packet.Payload))
 		}
 	}
