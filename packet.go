@@ -46,3 +46,11 @@ func (p ERRPacket) Error() string {
 		" SQLSTATE: " + p.SQLState +
 		" Message: " + p.ErrorMessage
 }
+
+func parseError(data []byte) error {
+	pkt, err := ParseERRPacket(data)
+	if err != nil {
+		return err
+	}
+	return pkt
+}

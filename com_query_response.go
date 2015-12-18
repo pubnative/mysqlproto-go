@@ -1,9 +1,5 @@
 package mysqlproto
 
-import (
-	"errors"
-)
-
 type ResultSet struct {
 	stream *Stream
 }
@@ -28,7 +24,7 @@ func ComQueryResponse(stream *Stream) (ResultSet, error) {
 	}
 
 	if packet.Payload[0] == PACKET_ERR {
-		return ResultSet{}, errors.New(string(packet.Payload))
+		return ResultSet{}, parseError(packet.Payload)
 	}
 
 	columns, _, _ := lenDecInt(packet.Payload)
@@ -40,7 +36,7 @@ func ComQueryResponse(stream *Stream) (ResultSet, error) {
 		}
 
 		if packet.Payload[0] == PACKET_ERR {
-			return ResultSet{}, errors.New(string(packet.Payload))
+			return ResultSet{}, parseError(packet.Payload)
 		}
 	}
 
