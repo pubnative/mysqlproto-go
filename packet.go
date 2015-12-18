@@ -24,18 +24,24 @@ type ERRPacket struct {
 	ErrorMessage   string
 }
 
-func ParseERRPacket(data []byte) (ERRPacket, error) {
+func ParseERRPacket(data []byte, capabilityFlags uint32) (ERRPacket, error) {
 	if len(data) == 0 || data[0] != PACKET_ERR {
 		return ERRPacket{}, ErrERRPacketPayload
 	}
 
 	pkt := ERRPacket{
-		Header:         data[0],
-		ErrorCode:      uint16(data[1]) | uint16(data[2])<<8,
-		SQLStateMarker: string(data[3]),
-		SQLState:       string(data[4:9]),
-		ErrorMessage:   string(data[9:]),
+		Header:    data[0],
+		ErrorCode: uint16(data[1]) | uint16(data[2])<<8,
 	}
+
+	offset := 3
+	if capabilityFlags&CLIENT_PROTOCOL_41 > 0 {
+		pkt.SQLStateMarker = string(data[3])
+		pkt.SQLState = string(data[4:9])
+		offset = 9
+	}
+
+	pkt.ErrorMessage = string(data[offset:])
 
 	return pkt, nil
 }
@@ -47,8 +53,8 @@ func (p ERRPacket) Error() string {
 		" Message: " + p.ErrorMessage
 }
 
-func parseError(data []byte) error {
-	pkt, err := ParseERRPacket(data)
+func parseError(data []byte, capabilityFlags uint32) error {
+	pkt, err := ParseERRPacket(data, capabilityFlags)
 	if err != nil {
 		return err
 	}

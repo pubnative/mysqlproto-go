@@ -13,23 +13,38 @@ func TestParseERRPacketInvalidPayload(t *testing.T) {
 		0x74, 0x61, 0x62, 0x6c, 0x65, 0x73,
 		0x20, 0x75, 0x73, 0x65, 0x64,
 	}
-	_, err := ParseERRPacket(data)
+	_, err := ParseERRPacket(data, CLIENT_PROTOCOL_41)
 	assert.Equal(t, err, ErrERRPacketPayload)
 }
 
-func TestParseERRPacket(t *testing.T) {
+func TestParseERRPacketCLIENT_PROTOCOL_41(t *testing.T) {
 	data := []byte{
 		0xff, 0x48, 0x04, 0x23, 0x48, 0x59,
 		0x30, 0x30, 0x30, 0x4e, 0x6f, 0x20,
 		0x74, 0x61, 0x62, 0x6c, 0x65, 0x73,
 		0x20, 0x75, 0x73, 0x65, 0x64,
 	}
-	pkt, err := ParseERRPacket(data)
+	pkt, err := ParseERRPacket(data, CLIENT_PROTOCOL_41)
 	assert.Nil(t, err)
 	assert.Equal(t, pkt.Header, byte(0xff))
 	assert.Equal(t, pkt.ErrorCode, uint16(1096))
 	assert.Equal(t, pkt.SQLStateMarker, "#")
 	assert.Equal(t, pkt.SQLState, "HY000")
+	assert.Equal(t, pkt.ErrorMessage, "No tables used")
+}
+
+func TestParseERRPacket(t *testing.T) {
+	data := []byte{
+		0xff, 0x48, 0x04, 0x4e, 0x6f, 0x20,
+		0x74, 0x61, 0x62, 0x6c, 0x65, 0x73,
+		0x20, 0x75, 0x73, 0x65, 0x64,
+	}
+	pkt, err := ParseERRPacket(data, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, pkt.Header, byte(0xff))
+	assert.Equal(t, pkt.ErrorCode, uint16(1096))
+	assert.Equal(t, pkt.SQLStateMarker, "")
+	assert.Equal(t, pkt.SQLState, "")
 	assert.Equal(t, pkt.ErrorMessage, "No tables used")
 }
 

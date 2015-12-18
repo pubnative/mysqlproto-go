@@ -1,11 +1,11 @@
 package mysqlproto
 
 type ResultSet struct {
-	stream *Stream
+	conn Conn
 }
 
 func (r ResultSet) Row() ([]byte, error) {
-	packet, err := r.stream.NextPacket()
+	packet, err := r.conn.NextPacket()
 	if err != nil {
 		return nil, err
 	}
@@ -17,28 +17,28 @@ func (r ResultSet) Row() ([]byte, error) {
 	return packet.Payload, nil
 }
 
-func ComQueryResponse(stream *Stream) (ResultSet, error) {
-	packet, err := stream.NextPacket()
+func ComQueryResponse(conn Conn) (ResultSet, error) {
+	packet, err := conn.NextPacket()
 	if err != nil {
 		return ResultSet{}, err
 	}
 
 	if packet.Payload[0] == PACKET_ERR {
-		return ResultSet{}, parseError(packet.Payload)
+		return ResultSet{}, parseError(packet.Payload, conn.CapabilityFlags)
 	}
 
 	columns, _, _ := lenDecInt(packet.Payload)
 	skip := int(columns) + 1 // skip column definition + first EOF
 	for i := 0; i < skip; i++ {
-		packet, err := stream.NextPacket()
+		packet, err := conn.NextPacket()
 		if err != nil {
 			return ResultSet{}, err
 		}
 
 		if packet.Payload[0] == PACKET_ERR {
-			return ResultSet{}, parseError(packet.Payload)
+			return ResultSet{}, parseError(packet.Payload, conn.CapabilityFlags)
 		}
 	}
 
-	return ResultSet{stream}, nil
+	return ResultSet{conn}, nil
 }
