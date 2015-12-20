@@ -22,6 +22,10 @@ func lenEncInt(i uint64) []byte {
 }
 
 func lenDecInt(b []byte) (uint64, uint64, bool) { // int, offset, is null
+	if len(b) == 0 { // MySQL may return 0 bytes for NULL value
+		return 0, 1, true
+	}
+
 	switch b[0] {
 	case 0xfb:
 		return 0, 1, true
