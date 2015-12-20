@@ -1,7 +1,8 @@
 package mysqlproto
 
+// https://dev.mysql.com/doc/internals/en/status-flags.html
 const (
-	SERVER_STATUS_IN_TRANS byte = iota
+	SERVER_STATUS_IN_TRANS uint16 = 1 << iota
 	SERVER_STATUS_AUTOCOMMIT
 	SERVER_MORE_RESULTS_EXISTS
 	SERVER_STATUS_NO_GOOD_INDEX_USED
