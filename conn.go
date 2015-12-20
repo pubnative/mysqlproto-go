@@ -33,7 +33,7 @@ func Handshake(rw io.ReadWriteCloser, capabilityFlags uint32,
 
 	conn := Conn{
 		stream,
-		uint32(res[4]) | uint32(res[5])<<8 | uint32(res[6])<<12 | uint32(res[7])<<16,
+		uint32(res[4]) | uint32(res[5])<<8 | uint32(res[6])<<16 | uint32(res[7])<<24,
 	}
 
 	if _, err = conn.Write(res); err != nil {
