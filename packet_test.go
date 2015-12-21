@@ -6,6 +6,50 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParseOKPacketInvalidPayout(t *testing.T) {
+	data := []byte{0xff}
+	_, err := ParseOKPacket(data, 0)
+	assert.Equal(t, err, ErrOKPacketPayload)
+}
+
+func TestParseOKPacketUpdateReply(t *testing.T) {
+	data := []byte{
+		0x00, 0x01, 0x00, 0x02, 0x00, 0x00,
+		0x00, 0x28, 0x52, 0x6f, 0x77, 0x73,
+		0x20, 0x6d, 0x61, 0x74, 0x63, 0x68,
+		0x65, 0x64, 0x3a, 0x20, 0x31, 0x20,
+		0x20, 0x43, 0x68, 0x61, 0x6e, 0x67,
+		0x65, 0x64, 0x3a, 0x20, 0x31, 0x20,
+		0x20, 0x57, 0x61, 0x72, 0x6e, 0x69,
+		0x6e, 0x67, 0x73, 0x3a, 0x20, 0x30,
+	}
+	pkt, err := ParseOKPacket(data, CLIENT_PROTOCOL_41|CLIENT_SESSION_TRACK)
+	assert.Nil(t, err)
+	assert.Equal(t, pkt.Header, byte(0x00))
+	assert.Equal(t, pkt.AffectedRows, uint64(1))
+	assert.Equal(t, pkt.LastInsertId, uint64(0))
+	assert.Equal(t, pkt.StatusFlags, SERVER_STATUS_AUTOCOMMIT)
+	assert.Equal(t, pkt.Warnings, uint16(0))
+	assert.Equal(t, pkt.Info, "Rows matched: 1  Changed: 1  Warnings: 0")
+	assert.Equal(t, pkt.SessionStateChanges, "")
+}
+
+func TestParseOKPacketInsertReply(t *testing.T) {
+	data := []byte{
+		0x00, 0x01, 0xfd, 0x9f, 0x86,
+		0x01, 0x02, 0x00, 0x00, 0x00,
+	}
+	pkt, err := ParseOKPacket(data, CLIENT_PROTOCOL_41|CLIENT_SESSION_TRACK)
+	assert.Nil(t, err)
+	assert.Equal(t, pkt.Header, byte(0x00))
+	assert.Equal(t, pkt.AffectedRows, uint64(1))
+	assert.Equal(t, pkt.LastInsertId, uint64(99999))
+	assert.Equal(t, pkt.StatusFlags, SERVER_STATUS_AUTOCOMMIT)
+	assert.Equal(t, pkt.Warnings, uint16(0))
+	assert.Equal(t, pkt.Info, "")
+	assert.Equal(t, pkt.SessionStateChanges, "")
+}
+
 func TestParseERRPacketInvalidPayload(t *testing.T) {
 	data := []byte{
 		0xfe, 0x48, 0x04, 0x23, 0x48, 0x59,
