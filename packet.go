@@ -6,12 +6,16 @@ import (
 )
 
 // https://dev.mysql.com/doc/internals/en/generic-response-packets.html
-const OK_PACKET = 0x00
-const ERR_PACKET = 0xff
-const EOF_PACKET = 0xfe
+const (
+	OK_PACKET  = 0x00
+	ERR_PACKET = 0xff
+	EOF_PACKET = 0xfe
+)
 
-var ErrERRPacketPayload = errors.New("Invalid ERR_PACKET payload")
-var ErrOKPacketPayload = errors.New("Invalid OK_PACKET payload")
+var (
+	ErrERRPacketPayload = errors.New("Invalid ERR_PACKET payload")
+	ErrOKPacketPayload  = errors.New("Invalid OK_PACKET payload")
+)
 
 type Packet struct {
 	SequenceID byte
