@@ -10,7 +10,7 @@ func TestLenDecInt(t *testing.T) {
 	b := []byte{}
 	num, offset, null := lenDecInt(b)
 	assert.Equal(t, num, uint64(0))
-	assert.Equal(t, offset, uint64(1))
+	assert.Equal(t, offset, uint64(0))
 	assert.True(t, null)
 
 	b = []byte{0xfb}
