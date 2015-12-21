@@ -9,7 +9,7 @@ type Conn struct {
 	CapabilityFlags uint32
 }
 
-func Handshake(rw io.ReadWriteCloser, capabilityFlags uint32,
+func ConnectPlainHandshake(rw io.ReadWriteCloser, capabilityFlags uint32,
 	username, password, database string,
 	connectAttrs map[string]string) (Conn, error) {
 	stream := NewStream(rw)
