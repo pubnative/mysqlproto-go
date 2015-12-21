@@ -1,5 +1,6 @@
 package mysqlproto
 
+// https://dev.mysql.com/doc/internals/en/command-phase.html
 const (
 	COM_SLEEP byte = iota
 	COM_QUIT

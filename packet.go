@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// https://dev.mysql.com/doc/internals/en/generic-response-packets.html
 const OK_PACKET = 0x00
 const ERR_PACKET = 0xff
 const EOF_PACKET = 0xfe
@@ -35,6 +36,7 @@ type OKPacket struct {
 	SessionStateChanges string
 }
 
+// https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
 func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 	if len(data) == 0 || (data[0] != OK_PACKET && data[0] != EOF_PACKET) {
 		return OKPacket{}, ErrOKPacketPayload
@@ -86,6 +88,7 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 	return pkt, nil
 }
 
+// https://dev.mysql.com/doc/internals/en/packet-ERR_Packet.html
 func ParseERRPacket(data []byte, capabilityFlags uint32) (ERRPacket, error) {
 	if len(data) == 0 || data[0] != ERR_PACKET {
 		return ERRPacket{}, ErrERRPacketPayload

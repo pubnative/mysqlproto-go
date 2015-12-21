@@ -1,5 +1,6 @@
 package mysqlproto
 
+// https://dev.mysql.com/doc/internals/en/capability-flags.html
 const (
 	CLIENT_LONG_PASSWORD uint32 = 1 << iota
 	CLIENT_FOUND_ROWS
