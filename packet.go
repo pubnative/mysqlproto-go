@@ -5,9 +5,9 @@ import (
 	"strconv"
 )
 
-const PACKET_OK = 0x00
-const PACKET_ERR = 0xff
-const PACKET_EOF = 0xfe
+const OK_PACKET = 0x00
+const ERR_PACKET = 0xff
+const EOF_PACKET = 0xfe
 
 var ErrERRPacketPayload = errors.New("Invalid ERR_PACKET payload")
 var ErrOKPacketPayload = errors.New("Invalid OK_PACKET payload")
@@ -36,7 +36,7 @@ type OKPacket struct {
 }
 
 func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
-	if len(data) == 0 || (data[0] != PACKET_OK && data[0] != PACKET_EOF) {
+	if len(data) == 0 || (data[0] != OK_PACKET && data[0] != EOF_PACKET) {
 		return OKPacket{}, ErrOKPacketPayload
 	}
 
@@ -87,7 +87,7 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 }
 
 func ParseERRPacket(data []byte, capabilityFlags uint32) (ERRPacket, error) {
-	if len(data) == 0 || data[0] != PACKET_ERR {
+	if len(data) == 0 || data[0] != ERR_PACKET {
 		return ERRPacket{}, ErrERRPacketPayload
 	}
 

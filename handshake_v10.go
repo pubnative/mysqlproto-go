@@ -25,7 +25,7 @@ func ReadHandshakeV10(stream *Stream) (HandshakeV10, error) {
 
 	data := pkt.Payload
 
-	if data[0] == PACKET_EOF {
+	if data[0] == EOF_PACKET {
 		return HandshakeV10{}, errors.New(string(data))
 	}
 

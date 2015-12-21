@@ -10,7 +10,7 @@ func (r ResultSet) Row() ([]byte, error) {
 		return nil, err
 	}
 
-	if packet.Payload[0] == PACKET_EOF {
+	if packet.Payload[0] == EOF_PACKET {
 		return nil, nil
 	}
 
@@ -23,7 +23,7 @@ func ComQueryResponse(conn Conn) (ResultSet, error) {
 		return ResultSet{}, err
 	}
 
-	if packet.Payload[0] == PACKET_ERR {
+	if packet.Payload[0] == ERR_PACKET {
 		return ResultSet{}, parseError(packet.Payload, conn.CapabilityFlags)
 	}
 
@@ -35,7 +35,7 @@ func ComQueryResponse(conn Conn) (ResultSet, error) {
 			return ResultSet{}, err
 		}
 
-		if packet.Payload[0] == PACKET_ERR {
+		if packet.Payload[0] == ERR_PACKET {
 			return ResultSet{}, parseError(packet.Payload, conn.CapabilityFlags)
 		}
 	}

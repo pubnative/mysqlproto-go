@@ -45,7 +45,7 @@ func Handshake(rw io.ReadWriteCloser, capabilityFlags uint32,
 		return conn, err
 	}
 
-	if packet.Payload[0] == PACKET_OK {
+	if packet.Payload[0] == OK_PACKET {
 		return conn, nil
 	} else {
 		return conn, parseError(packet.Payload, conn.CapabilityFlags)
