@@ -9,7 +9,7 @@ import (
 type HandshakeV10 struct {
 	ProtocolVersion byte
 	ServerVersion   string
-	ConnectionId    [4]byte
+	ConnectionID    [4]byte
 	AuthPluginData  []byte
 	CapabilityFlags uint32
 	CharacterSet    byte
@@ -39,7 +39,7 @@ func ReadHandshakeV10(stream *Stream) (HandshakeV10, error) {
 	packet.ServerVersion = string(data[pos : pos+null])
 	pos += null + 1 // skip null terminator
 
-	packet.ConnectionId = [4]byte{
+	packet.ConnectionID = [4]byte{
 		data[pos],
 		data[pos+1],
 		data[pos+2],

@@ -33,7 +33,7 @@ type ERRPacket struct {
 type OKPacket struct {
 	Header              byte // 0x00 or 0xfe
 	AffectedRows        uint64
-	LastInsertId        uint64
+	LastInsertID        uint64
 	StatusFlags         uint16
 	Warnings            uint16
 	Info                string
@@ -51,7 +51,7 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 	offset += 1
 	affectedRows, offsetInt, _ := lenDecInt(data[1:])
 	offset += int(offsetInt)
-	lastInsertId, offsetInt, _ := lenDecInt(data[offset:])
+	lastInsertID, offsetInt, _ := lenDecInt(data[offset:])
 	offset += int(offsetInt)
 
 	var statusFlags, warnings uint16
@@ -82,7 +82,7 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 	pkt := OKPacket{
 		Header:              header,
 		AffectedRows:        affectedRows,
-		LastInsertId:        lastInsertId,
+		LastInsertID:        lastInsertID,
 		StatusFlags:         statusFlags,
 		Warnings:            warnings,
 		Info:                info,
