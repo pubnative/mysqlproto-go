@@ -76,7 +76,12 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 			offset += int(intOffset) + int(size)
 		}
 	} else {
-		info = string(data[offset:])
+		// Documentation says that in this case info is string<EOF> type
+		// but apparently it's string<lenenc>
+		// https://github.com/mysql/mysql-server/blob/5.6/sql/protocol.cc#L248
+		// https://github.com/mysql/mysql-server/blob/5.6/sql/protocol.cc#L585
+		_, infoOffset, _ := lenDecInt(data[offset:])
+		info = string(data[offset+int(infoOffset):])
 	}
 
 	pkt := OKPacket{
