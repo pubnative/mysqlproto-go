@@ -7,9 +7,9 @@ import (
 
 // https://dev.mysql.com/doc/internals/en/generic-response-packets.html
 const (
-	OK_PACKET  = 0x00
-	ERR_PACKET = 0xff
-	EOF_PACKET = 0xfe
+	OK_PACKET  byte = 0x00
+	ERR_PACKET byte = 0xff
+	EOF_PACKET byte = 0xfe
 )
 
 var (
