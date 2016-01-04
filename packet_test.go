@@ -9,7 +9,7 @@ import (
 func TestParseOKPacketInvalidPayout(t *testing.T) {
 	data := []byte{0xff}
 	_, err := ParseOKPacket(data, 0)
-	assert.Equal(t, err, ErrOKPacketPayload)
+	assert.Equal(t, err.Error(), "mysqlproto: invalid OK_PACKET payload: ff")
 }
 
 func TestParseOKPacketUpdateReply(t *testing.T) {
@@ -58,7 +58,7 @@ func TestParseERRPacketInvalidPayload(t *testing.T) {
 		0x20, 0x75, 0x73, 0x65, 0x64,
 	}
 	_, err := ParseERRPacket(data, CLIENT_PROTOCOL_41)
-	assert.Equal(t, err, ErrERRPacketPayload)
+	assert.Equal(t, err.Error(), "mysqlproto: invalid ERR_PACKET payload: fe48042348593030304e6f207461626c65732075736564")
 }
 
 func TestParseERRPacketCLIENT_PROTOCOL_41(t *testing.T) {

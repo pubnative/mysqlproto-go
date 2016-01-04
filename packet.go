@@ -1,7 +1,7 @@
 package mysqlproto
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -10,11 +10,6 @@ const (
 	OK_PACKET  byte = 0x00
 	ERR_PACKET byte = 0xff
 	EOF_PACKET byte = 0xfe
-)
-
-var (
-	ErrERRPacketPayload = errors.New("Invalid ERR_PACKET payload")
-	ErrOKPacketPayload  = errors.New("Invalid OK_PACKET payload")
 )
 
 type Packet struct {
@@ -43,7 +38,7 @@ type OKPacket struct {
 // https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
 func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 	if len(data) == 0 || (data[0] != OK_PACKET && data[0] != EOF_PACKET) {
-		return OKPacket{}, ErrOKPacketPayload
+		return OKPacket{}, fmt.Errorf("mysqlproto: invalid OK_PACKET payload: %x", data)
 	}
 
 	offset := 0
@@ -100,7 +95,7 @@ func ParseOKPacket(data []byte, capabilityFlags uint32) (OKPacket, error) {
 // https://dev.mysql.com/doc/internals/en/packet-ERR_Packet.html
 func ParseERRPacket(data []byte, capabilityFlags uint32) (ERRPacket, error) {
 	if len(data) == 0 || data[0] != ERR_PACKET {
-		return ERRPacket{}, ErrERRPacketPayload
+		return ERRPacket{}, fmt.Errorf("mysqlproto: invalid ERR_PACKET payload: %x", data)
 	}
 
 	pkt := ERRPacket{
