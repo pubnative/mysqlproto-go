@@ -34,3 +34,17 @@ const (
 	COM_BINLOG_DUMP_GTID
 	COM_RESET_CONNECTION
 )
+
+func CommandPacket(command byte, payload []byte) []byte {
+	size := len(payload) + 1 // command byte
+
+	packet := make([]byte, size+4)
+	packet[0] = byte(size)
+	packet[1] = byte(size >> 8)
+	packet[2] = byte(size >> 16)
+	packet[3] = byte(0x00) // sequence ID always 0x00
+	packet[4] = command
+	copy(packet[5:], payload)
+
+	return packet
+}

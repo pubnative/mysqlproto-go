@@ -1,6 +1,7 @@
 package mysqlproto
 
 import (
+	"errors"
 	"io"
 )
 
@@ -8,6 +9,8 @@ type Conn struct {
 	*Stream
 	CapabilityFlags uint32
 }
+
+var ErrNoStream = errors.New("mysqlproto: stream is not set")
 
 func ConnectPlainHandshake(rw io.ReadWriteCloser, capabilityFlags uint32,
 	username, password, database string,
@@ -50,4 +53,38 @@ func ConnectPlainHandshake(rw io.ReadWriteCloser, capabilityFlags uint32,
 	}
 
 	return conn, parseError(packet.Payload, conn.CapabilityFlags)
+}
+
+func (c Conn) Close() error {
+	if c.Stream == nil {
+		return ErrNoStream
+	}
+
+	_, err := c.Write(CommandPacket(COM_QUIT, nil))
+	if err != nil {
+		c.Stream.Close()
+		return err
+	}
+
+	pkt, err := c.NextPacket()
+	if err != nil {
+		if err != io.EOF {
+			c.Stream.Close()
+			return err
+		}
+
+		return c.Stream.Close()
+	}
+
+	if pkt.Payload[0] == OK_PACKET {
+		return c.Stream.Close()
+	}
+
+	err = parseError(pkt.Payload, c.CapabilityFlags)
+	if err != nil {
+		c.Stream.Close()
+		return err
+	}
+
+	return c.Stream.Close()
 }

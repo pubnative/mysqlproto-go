@@ -97,12 +97,23 @@ func (s *Stream) readAtLeast(buf []byte, min int) (n int, err error) {
 
 type buffer struct {
 	*bytes.Buffer
+	closed  bool
+	writeFn func([]byte) (int, error)
 }
 
 func newBuffer(data []byte) *buffer {
-	return &buffer{bytes.NewBuffer(data)}
+	return &buffer{bytes.NewBuffer(data), false, nil}
 }
 
 func (b *buffer) Close() error {
+	b.closed = true
 	return nil
+}
+
+func (b *buffer) Write(data []byte) (int, error) {
+	if b.writeFn == nil {
+		return 0, nil
+	}
+
+	return b.writeFn(data)
 }
