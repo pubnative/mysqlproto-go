@@ -90,7 +90,6 @@ func TestHandshakeResponse41(t *testing.T) {
 		assert.Equal(t, int(packet[100]), 6)
 		assert.Equal(t, string(packet[101:]), "5.6.25")
 	}
-
 }
 
 func TestNativePassword(t *testing.T) {

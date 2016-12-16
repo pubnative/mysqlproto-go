@@ -120,7 +120,7 @@ func HandshakeResponse41(
 	packet = append(packet, authResponseLen...)
 	packet = append(packet, authResponse...)
 
-	if (capabilityFlags & CLIENT_CONNECT_WITH_DB) != 0 {
+	if capabilityFlags&CLIENT_CONNECT_WITH_DB > 0 {
 		packet = append(packet, database...)
 		packet = append(packet, 0x00)
 	}
