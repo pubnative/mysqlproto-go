@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseOKPacketInvalidPayout(t *testing.T) {
+func TestParseOKPacketInvalidPayload(t *testing.T) {
 	data := []byte{0xff}
 	_, err := ParseOKPacket(data, 0)
 	assert.Equal(t, err.Error(), "mysqlproto: invalid OK_PACKET payload: ff")
