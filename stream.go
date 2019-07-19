@@ -2,21 +2,23 @@ package mysqlproto
 
 import (
 	"bytes"
-	"io"
+	"net"
+	"time"
 )
 
 const PACKET_BUFFER_SIZE = 1500 // default MTU
 
 type Stream struct {
-	stream   io.ReadWriteCloser
+	stream   net.Conn
 	buffer   []byte
 	read     int
 	left     int
 	syscalls int
+	ReadTimeout time.Duration
 }
 
-func NewStream(stream io.ReadWriteCloser) *Stream {
-	return &Stream{stream, nil, 0, 0, 0}
+func NewStream(stream net.Conn, readTimeout time.Duration) *Stream {
+	return &Stream{stream, nil, 0, 0, 0, readTimeout}
 }
 
 func (s *Stream) Write(data []byte) (int, error) {
@@ -86,6 +88,12 @@ func (s *Stream) ResetStats() {
 func (s *Stream) readAtLeast(buf []byte, min int) (n int, err error) {
 	for n < min && err == nil {
 		var nn int
+		if s.ReadTimeout > 0 {
+			if err = s.stream.SetReadDeadline(time.Now().Add(s.ReadTimeout)); err != nil {
+				return
+			}
+		}
+
 		nn, err = s.stream.Read(buf[n:])
 		s.syscalls += 1
 		n += nn
@@ -117,3 +125,12 @@ func (b *buffer) Write(data []byte) (int, error) {
 
 	return b.writeFn(data)
 }
+func (b *buffer) RemoteAddr() net.Addr { return MockAddr{} }
+func (b *buffer) LocalAddr() net.Addr { return MockAddr{} }
+func (b *buffer) SetDeadline(t time.Time) error { return nil}
+func (b *buffer) SetReadDeadline(t time.Time) error { return nil}
+func (b *buffer) SetWriteDeadline(t time.Time) error { return nil}
+
+type MockAddr struct {}
+func (m MockAddr) Network() string { return "" }
+func (m MockAddr) String() string { return "" }
