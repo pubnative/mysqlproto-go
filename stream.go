@@ -14,7 +14,7 @@ type Stream struct {
 	read     int
 	left     int
 	syscalls int
-	ReadTimeout time.Duration
+	readTimeout time.Duration
 }
 
 func NewStream(stream net.Conn, readTimeout time.Duration) *Stream {
@@ -88,8 +88,8 @@ func (s *Stream) ResetStats() {
 func (s *Stream) readAtLeast(buf []byte, min int) (n int, err error) {
 	for n < min && err == nil {
 		var nn int
-		if s.ReadTimeout > 0 {
-			if err = s.stream.SetReadDeadline(time.Now().Add(s.ReadTimeout)); err != nil {
+		if s.readTimeout > 0 {
+			if err = s.stream.SetReadDeadline(time.Now().Add(s.readTimeout)); err != nil {
 				return
 			}
 		}
