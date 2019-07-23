@@ -3,6 +3,8 @@ package mysqlproto
 import (
 	"errors"
 	"io"
+	"net"
+	"time"
 )
 
 type Conn struct {
@@ -12,10 +14,11 @@ type Conn struct {
 
 var ErrNoStream = errors.New("mysqlproto: stream is not set")
 
-func ConnectPlainHandshake(rw io.ReadWriteCloser, capabilityFlags uint32,
+func ConnectPlainHandshake(rw net.Conn, capabilityFlags uint32,
 	username, password, database string,
-	connectAttrs map[string]string) (Conn, error) {
-	stream := NewStream(rw)
+	connectAttrs map[string]string,
+	readTimeout time.Duration) (Conn, error) {
+	stream := NewStream(rw, readTimeout)
 	handshakeV10, err := ReadHandshakeV10(stream)
 	if err != nil {
 		return Conn{}, err

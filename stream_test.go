@@ -2,6 +2,7 @@ package mysqlproto
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ func TestNextPacket7(t *testing.T) {
 		0x01, 0x02, 0x03,
 	})
 
-	stream := NewStream(buf)
+	stream := NewStream(buf, time.Duration(0))
 	packet, err := stream.NextPacket()
 	assert.Nil(t, err)
 	assert.Equal(t, packet.SequenceID, byte(0x02))
@@ -39,7 +40,7 @@ func TestNextPacket256(t *testing.T) {
 		0x00, 0x00, 0x00, 0x02, 0x01, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x02,
 	})
 
-	stream := NewStream(buf)
+	stream := NewStream(buf, time.Duration(0))
 	packet, err := stream.NextPacket()
 	assert.Nil(t, err)
 	assert.Equal(t, packet.SequenceID, byte(0x02))

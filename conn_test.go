@@ -3,6 +3,7 @@ package mysqlproto
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -55,7 +56,7 @@ func TestConnCloseServerReplyERRPacket(t *testing.T) {
 		0x73, 0x65, 0x64,
 	}
 	buf := newBuffer(data)
-	conn := Conn{Stream: NewStream(buf), CapabilityFlags: CLIENT_PROTOCOL_41}
+	conn := Conn{Stream: NewStream(buf, time.Duration(0)), CapabilityFlags: CLIENT_PROTOCOL_41}
 	err := conn.Close()
 	assert.NotNil(t, err)
 	assert.Equal(t, err.Error(), "mysqlproto: Error: 1096 SQLSTATE: HY000 Message: No tables used")
@@ -69,7 +70,7 @@ func TestConnCloseServerReplyInvalidPacket(t *testing.T) {
 		0x48, 0x59, 0x30, 0x30,
 	}
 	buf := newBuffer(data)
-	conn := Conn{Stream: NewStream(buf)}
+	conn := Conn{Stream: NewStream(buf, time.Duration(0))}
 	err := conn.Close()
 	assert.NotNil(t, err)
 	assert.Equal(t, err.Error(), "mysqlproto: invalid ERR_PACKET payload: dd48042348593030")
