@@ -48,7 +48,7 @@ func TestComQueryResponseColumnReader(t *testing.T) {
 	assert.Equal(t, id.CharacterSet, uint16(63))
 	assert.Equal(t, id.ColumnLength, uint64(11))
 	assert.Equal(t, id.ColumnType.String(), "LONG")
-	assert.Equal(t, id.Flags, uint16(3))
+	assert.Equal(t, id.Flags, uint16(0x4203))
 	assert.Equal(t, id.Decimals, uint8(0))
 
 	name := rs.Columns[1]
@@ -87,7 +87,7 @@ func TestComQueryResponseColumnReader(t *testing.T) {
 	assert.Equal(t, score.CharacterSet, uint16(63))
 	assert.Equal(t, score.ColumnLength, uint64(8))
 	assert.Equal(t, score.ColumnType.String(), "NEWDECIMAL")
-	assert.Equal(t, score.Flags, uint16(512))
+	assert.Equal(t, score.Flags, uint16(0))
 	assert.Equal(t, score.Decimals, uint8(2))
 
 	note := rs.Columns[4]

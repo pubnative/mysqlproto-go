@@ -95,7 +95,7 @@ func ComQueryResponse(conn Conn) (ResultSet, error) {
 		column.CharacterSet = uint16(bytes[0]) | uint16(bytes[1])<<8
 		column.ColumnLength = uint64(bytes[2]) | uint64(bytes[3])<<8 | uint64(bytes[4])<<16 | uint64(bytes[5])<<32
 		column.ColumnType = Type(bytes[6])
-		column.Flags = uint16(bytes[7]) | uint16(bytes[9])<<8
+		column.Flags = uint16(bytes[7]) | uint16(bytes[8])<<8
 		column.Decimals = bytes[9]
 
 		columns[i] = column
