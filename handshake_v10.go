@@ -36,6 +36,9 @@ func ReadHandshakeV10(stream *Stream) (HandshakeV10, error) {
 	pos += 1
 
 	null := bytes.IndexByte(data[pos:], 0x00)
+	if null == -1 {
+		return HandshakeV10{}, errors.New("mysqlproto: expected 0x00: " + string(data))
+	}
 	packet.ServerVersion = string(data[pos : pos+null])
 	pos += null + 1 // skip null terminator
 
