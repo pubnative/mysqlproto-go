@@ -4,6 +4,7 @@ package mysqlproto
 import (
 	"bytes"
 	"errors"
+	"fmt"
 )
 
 type HandshakeV10 struct {
@@ -37,7 +38,7 @@ func ReadHandshakeV10(stream *Stream) (HandshakeV10, error) {
 
 	null := bytes.IndexByte(data[pos:], 0x00)
 	if null == -1 {
-		return HandshakeV10{}, errors.New("mysqlproto: expected 0x00: " + string(data))
+		return HandshakeV10{}, fmt.Errorf("mysqlproto: ReadHandshakeV10: expected 0x00: %v", data)
 	}
 	packet.ServerVersion = string(data[pos : pos+null])
 	pos += null + 1 // skip null terminator
